@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Светлая тема — «Чистый лист» (Л2) */
+:root {
+  --color-paper: 247 248 250;
+  --color-surface-rgb: 255 255 255;
+  --color-ink: 21 24 29;
+  --color-muted: 107 114 128;
+  --color-line: 230 232 238;
+  --color-line-strong: 209 212 221;
+  --color-accent: 109 90 230;
+  --color-accent-light: 236 234 251;
+  --color-accent-dark: 91 73 208;
+  --color-clay: 214 87 74;
+  --color-clay-light: 250 235 232;
+  --color-done: 31 161 104;
+  --color-pending: 214 87 74;
+  --surface: rgb(var(--color-surface-rgb));
+  --tint-strength: 15%;
+  color-scheme: light;
+}
+
+/* Тёмная тема — «Полночные чернила» (Т1) */
+:root[data-theme='dark'] {
+  --color-paper: 15 20 26;
+  --color-surface-rgb: 24 32 41;
+  --color-ink: 230 235 240;
+  --color-muted: 136 148 161;
+  --color-line: 38 48 57;
+  --color-line-strong: 55 68 79;
+  --color-accent: 79 163 224;
+  --color-accent-light: 28 42 56;
+  --color-accent-dark: 63 143 204;
+  --color-clay: 232 115 74;
+  --color-clay-light: 51 34 28;
+  --color-done: 79 185 138;
+  --color-pending: 232 115 74;
+  /* На тёмной поверхности слабый тинт почти не читается — усиливаем */
+  --tint-strength: 28%;
+  color-scheme: dark;
+}
+
+html,
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+::selection {
+  background: rgb(var(--color-accent) / 0.25);
+}
+
+.checkbox {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 1.5px solid rgb(var(--color-line-strong));
+  background: rgb(var(--color-surface-rgb));
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.checkbox:checked {
+  background: rgb(var(--color-accent));
+  border-color: rgb(var(--color-accent));
+}
+
+.checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgb(var(--color-line-strong));
+  border-radius: 3px;
+}
+
+/* Кликабельные «хит-зоны» ссылок поверх текста заметки.
+   Прозрачны; при наведении подчёркивают ссылку и меняют курсор. */
+.note-link-hit {
+  position: absolute;
+  display: block;
+  cursor: pointer;
+  border-bottom: 1.5px solid transparent;
+}
+.note-link-hit:hover {
+  border-bottom-color: rgb(var(--color-accent));
+}

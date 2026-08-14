@@ -1,0 +1,6 @@
+# Caddy автоматически получает и продлевает HTTPS-сертификат, если APP_DOMAIN —
+# настоящий хостнейм (свой домен или <ip>.nip.io). Если APP_DOMAIN = :80 —
+# отдаёт по HTTP без сертификата.
+{$APP_DOMAIN} {
+	reverse_proxy frontend:80
+}
