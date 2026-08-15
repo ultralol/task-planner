@@ -17,7 +17,6 @@ function getBotUsername() {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// Вызов метода Telegram Bot API
 async function tg(method, params) {
   const res = await fetch(`${API}/${method}`, {
     method: 'POST',
