@@ -188,7 +188,10 @@ export default function DayView() {
               <div key={m.task_id} className="flex items-center gap-2 text-sm text-muted">
                 <CornerDownRight size={14} />
                 <span className="line-through">{m.title}</span>
-                <span>→ {formatDateHuman(m.moved_to_date)}</span>
+                <span>→ {formatDateHuman(m.now_date)}</span>
+                {m.total_moves > 1 && (
+                  <span className="text-xs text-muted/70">(перенесена {m.total_moves} раза)</span>
+                )}
               </div>
             ))}
           </div>

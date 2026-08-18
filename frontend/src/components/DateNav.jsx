@@ -38,6 +38,12 @@ export function formatDateShort(dateStr) {
   return `${dd} ${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
+// D MMM без года, например «13 авг» — для компактных подписей вроде цепочки переносов
+export function formatDateTiny(dateStr) {
+  const d = new Date(`${dateStr}T00:00:00Z`);
+  return `${d.getUTCDate()} ${MONTHS_SHORT[d.getUTCMonth()]}`;
+}
+
 export function todayStr() {
   return toLocalDateStr(new Date());
 }

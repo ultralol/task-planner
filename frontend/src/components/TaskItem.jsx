@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
-import { Pencil, ArrowRightCircle, Trash2, Bell } from 'lucide-react';
+import { Pencil, ArrowRightCircle, Trash2, Bell, History } from 'lucide-react';
 import { categoryTint } from '../categoryColor.js';
+import { formatDateTiny } from './DateNav.jsx';
 
 function formatTime(t) {
   if (!t) return null;
   return t.slice(0, 5);
+}
+
+// «17 авг → 18 авг → 19 авг» — вся цепочка переносов задачи, для подсказки при наведении
+function formatMoveChain(moves) {
+  const dates = [moves[0].from_date, ...moves.map((m) => m.to_date)];
+  return dates.map(formatDateTiny).join(' → ');
 }
 
 export default function TaskItem({ task, onToggle, onEdit, onMove, onDelete, checkbox = true }) {
@@ -36,6 +43,14 @@ export default function TaskItem({ task, onToggle, onEdit, onMove, onDelete, che
           {task.title}
           {task.remind && (
             <Bell size={12} className="inline-block ml-1.5 -mt-0.5 text-muted" aria-label="Напоминание" />
+          )}
+          {task.moves?.length > 0 && (
+            <History
+              size={12}
+              className="inline-block ml-1.5 -mt-0.5 text-muted"
+              aria-label="Перенесена"
+              title={`Перенесена: ${formatMoveChain(task.moves)}`}
+            />
           )}
         </p>
         {task.note && (

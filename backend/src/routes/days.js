@@ -30,20 +30,60 @@ router.get('/:date', async (req, res, next) => {
       )
     ).rows;
 
-    // Задачи, которые изначально стояли в этот день, но были перенесены на другой день
+    // Полная цепочка переносов для задач, которые сейчас лежат в этом дне
+    // (чтобы день видел, что задача, например, приехала сюда через 17 → 18 → 19)
+    if (tasks.length > 0) {
+      const moveRows = (
+        await client.query(
+          `SELECT tm.task_id, fd.date AS from_date, td.date AS to_date, tm.moved_at
+           FROM task_moves tm
+           JOIN days fd ON fd.id = tm.from_day_id
+           JOIN days td ON td.id = tm.to_day_id
+           WHERE tm.task_id = ANY($1::int[])
+           ORDER BY tm.task_id, tm.moved_at`,
+          [tasks.map((t) => t.id)]
+        )
+      ).rows;
+      const movesByTask = new Map();
+      for (const row of moveRows) {
+        if (!movesByTask.has(row.task_id)) movesByTask.set(row.task_id, []);
+        movesByTask.get(row.task_id).push({ from_date: row.from_date, to_date: row.to_date });
+      }
+      for (const task of tasks) {
+        task.moves = movesByTask.get(task.id) || [];
+      }
+    }
+
+    // Задачи, которые изначально стояли в этот день, но были перенесены на другой день.
+    // now_date — чтобы день показывал, где задача находится СЕЙЧАС, а не только
+    // первый шаг переноса (задача могла переехать дальше несколько раз).
     const movedAway = (
       await client.query(
         `SELECT tm.moved_at, t.id AS task_id, t.title, t.category_id, c.name AS category_name,
-                c.color AS category_color, d2.date AS moved_to_date
+                c.color AS category_color, d2.date AS moved_to_date, cur.date AS now_date
          FROM task_moves tm
          JOIN tasks t ON t.id = tm.task_id
          JOIN days d2 ON d2.id = tm.to_day_id
+         JOIN days cur ON cur.id = t.day_id
          LEFT JOIN categories c ON c.id = t.category_id
          WHERE tm.from_day_id = $1
          ORDER BY tm.moved_at DESC`,
         [day.id]
       )
     ).rows;
+
+    if (movedAway.length > 0) {
+      const countRows = (
+        await client.query(
+          `SELECT task_id, COUNT(*)::int AS total FROM task_moves WHERE task_id = ANY($1::int[]) GROUP BY task_id`,
+          [movedAway.map((m) => m.task_id)]
+        )
+      ).rows;
+      const totalsByTask = new Map(countRows.map((r) => [r.task_id, r.total]));
+      for (const m of movedAway) {
+        m.total_moves = totalsByTask.get(m.task_id) || 1;
+      }
+    }
 
     // Менялся ли шаблон после последней генерации/синхронизации этого дня —
     // сигнал для кнопки «Обновить из шаблона» на фронте.
