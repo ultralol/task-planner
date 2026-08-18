@@ -9,6 +9,7 @@ const dayRoutes = require('./routes/days');
 const taskRoutes = require('./routes/tasks');
 const analyticsRoutes = require('./routes/analytics');
 const noteRoutes = require('./routes/notes');
+const userRoutes = require('./routes/users');
 const telegramRoutes = require('./routes/telegram');
 const telegram = require('./services/telegram');
 const { errorHandler } = require('./middleware/errorHandler');
@@ -31,6 +32,7 @@ app.use('/api/days', dayRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/notes', noteRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/telegram', telegramRoutes);
 
 app.use((req, res) => res.status(404).json({ error: 'Не найдено' }));

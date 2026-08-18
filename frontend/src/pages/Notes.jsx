@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Users } from 'lucide-react';
 import api from '../api.js';
 import NoteEditorModal from '../components/NoteEditorModal.jsx';
+import NoteShareModal from '../components/NoteShareModal.jsx';
 
 const MONTHS_SHORT = [
   'янв', 'фев', 'мар', 'апр', 'май', 'июн',
@@ -20,6 +21,7 @@ export default function Notes() {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(undefined); // undefined = закрыто, null = новая, объект = редактирование
+  const [sharingNote, setSharingNote] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -76,21 +78,36 @@ export default function Notes() {
               <div className="flex-1 min-w-0">
                 <p className={`text-sm font-medium truncate ${note.title ? 'text-ink' : 'text-muted italic'}`}>
                   {note.title || 'Без заголовка'}
+                  {!note.is_owner && <span className="ml-2 text-xs font-normal text-muted">от {note.owner_name}</span>}
                 </p>
                 <p className="text-xs text-muted truncate mt-0.5">
                   Обновлено {formatDateTime(note.updated_at)} · Создано {formatDateTime(note.created_at)}
                 </p>
               </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(note);
-                }}
-                className="shrink-0 p-1.5 rounded text-clay hover:bg-clay-light opacity-0 group-hover:opacity-100 transition"
-                title="Удалить"
-              >
-                <Trash2 size={15} />
-              </button>
+              {note.is_owner && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSharingNote(note);
+                  }}
+                  className="shrink-0 p-1.5 rounded text-muted hover:text-ink hover:bg-accent-light opacity-0 group-hover:opacity-100 transition"
+                  title="Настроить доступ"
+                >
+                  <Users size={15} />
+                </button>
+              )}
+              {note.can_delete && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(note);
+                  }}
+                  className="shrink-0 p-1.5 rounded text-clay hover:bg-clay-light opacity-0 group-hover:opacity-100 transition"
+                  title="Удалить"
+                >
+                  <Trash2 size={15} />
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -106,11 +123,15 @@ export default function Notes() {
       {editing !== undefined && (
         <NoteEditorModal
           initial={editing}
+          readOnly={Boolean(editing) && !editing.can_edit}
+          canDelete={!editing || editing.can_delete}
           onClose={() => setEditing(undefined)}
           onSubmit={(payload) => (editing ? handleUpdate(editing.id, payload) : handleCreate(payload))}
           onDelete={deleteNote}
         />
       )}
+
+      {sharingNote && <NoteShareModal note={sharingNote} onClose={() => setSharingNote(null)} />}
     </div>
   );
 }

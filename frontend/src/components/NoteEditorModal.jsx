@@ -24,7 +24,7 @@ function linkify(text) {
 // кладём прозрачные кликабельные «хит-зоны». Их позиции измеряем по скрытому
 // зеркалу с той же вёрсткой. Так каретка всегда видна, а ссылки подчёркиваются
 // при наведении, меняют курсор и открываются в новом окне по клику.
-function NoteBody({ value, onChange, placeholder }) {
+function NoteBody({ value, onChange, placeholder, readOnly }) {
   const wrapRef = useRef(null);
   const taRef = useRef(null);
   const mirrorRef = useRef(null);
@@ -87,6 +87,7 @@ function NoteBody({ value, onChange, placeholder }) {
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         spellCheck={false}
+        readOnly={readOnly}
         className={`${shared} block min-h-[50vh] resize-none overflow-hidden bg-transparent text-ink placeholder:text-muted focus:outline-none`}
       />
       <div ref={mirrorRef} aria-hidden="true" className={`${shared} absolute inset-0 invisible`} />
@@ -106,13 +107,15 @@ function NoteBody({ value, onChange, placeholder }) {
 }
 
 // Полноэкранный редактор заметки (по сути модальный оверлей на весь экран).
-export default function NoteEditorModal({ initial, onClose, onSubmit, onDelete }) {
+// readOnly — заметка чужая и без права редактирования (можно только прочитать);
+// canDelete — есть право удаления (у владельца — всегда).
+export default function NoteEditorModal({ initial, readOnly = false, canDelete = true, onClose, onSubmit, onDelete }) {
   const [title, setTitle] = useState(initial?.title || '');
   const [body, setBody] = useState(initial?.body || '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const dirty = title !== (initial?.title || '') || body !== (initial?.body || '');
+  const dirty = !readOnly && (title !== (initial?.title || '') || body !== (initial?.body || ''));
 
   function requestClose() {
     if (dirty && !window.confirm('Закрыть без сохранения? Изменения будут потеряны.')) return;
@@ -167,9 +170,13 @@ export default function NoteEditorModal({ initial, onClose, onSubmit, onDelete }
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Заголовок (необязательно)"
+          readOnly={readOnly}
           className="flex-1 min-w-0 text-lg font-medium bg-transparent text-ink placeholder:text-muted focus:outline-none"
         />
-        {initial && (
+        {readOnly && !initial?.is_owner && (
+          <span className="shrink-0 text-xs text-muted">от {initial?.owner_name}, только просмотр</span>
+        )}
+        {initial && canDelete && (
           <button
             onClick={handleDelete}
             aria-label="Удалить"
@@ -179,20 +186,22 @@ export default function NoteEditorModal({ initial, onClose, onSubmit, onDelete }
             <Trash2 size={18} />
           </button>
         )}
-        <button
-          onClick={handleSave}
-          disabled={busy}
-          className="shrink-0 bg-accent text-white rounded-lg px-4 py-1.5 text-sm font-medium hover:bg-accent-dark transition disabled:opacity-60"
-        >
-          {busy ? 'Сохраняем…' : 'Сохранить'}
-        </button>
+        {!readOnly && (
+          <button
+            onClick={handleSave}
+            disabled={busy}
+            className="shrink-0 bg-accent text-white rounded-lg px-4 py-1.5 text-sm font-medium hover:bg-accent-dark transition disabled:opacity-60"
+          >
+            {busy ? 'Сохраняем…' : 'Сохранить'}
+          </button>
+        )}
       </header>
 
       {error && <div className="px-5 py-2 text-sm text-pending border-b border-line">{error}</div>}
 
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-5">
-          <NoteBody value={body} onChange={setBody} placeholder="Текст заметки…" />
+          <NoteBody value={body} onChange={setBody} placeholder="Текст заметки…" readOnly={readOnly} />
         </div>
       </div>
     </div>
