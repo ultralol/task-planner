@@ -28,6 +28,35 @@ function StatCard({ label, value, color }) {
   );
 }
 
+// Строка сводки по категории.
+// На узком экране название и цифры идут в две строки (иначе фиксированные ширины
+// колонок не влезают в мобильную ширину), с sm — прежний вид в одну строку.
+function CategoryRow({ row }) {
+  const stats = [
+    { label: 'всего', value: row.total, color: 'text-muted', width: 'sm:w-24' },
+    { label: 'выполнено', value: row.done, color: 'text-done', width: 'sm:w-28' },
+    { label: 'невыполнено', value: row.pending, color: 'text-pending', width: 'sm:w-28' },
+    { label: 'перенесено', value: row.moved_away, color: 'text-muted', width: 'sm:w-24' },
+  ];
+
+  return (
+    <div className="px-4 py-3 sm:flex sm:items-center sm:gap-3">
+      <div className="flex items-center gap-3 min-w-0 sm:flex-1">
+        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: row.category_color }} />
+        <span className="text-sm truncate">{row.category_name}</span>
+      </div>
+      {/* pl-[1.375rem] — выравнивание под названием: точка 10px + gap 12px */}
+      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 pl-[1.375rem] sm:mt-0 sm:pl-0 sm:flex-nowrap sm:gap-3">
+        {stats.map((s) => (
+          <span key={s.label} className={`text-xs ${s.color} ${s.width} sm:text-right`}>
+            {s.value} {s.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Analytics() {
   const { theme } = useTheme();
   const c = CHART[theme] || CHART.light;
@@ -116,15 +145,8 @@ export default function Analytics() {
 
           <h3 className="text-sm font-medium text-muted mb-2">По категориям</h3>
           <div className="bg-surface rounded-2xl border border-line divide-y divide-line">
-            {data.by_category.map((c) => (
-              <div key={c.category_id || 'none'} className="flex items-center gap-3 px-4 py-3">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: c.category_color }} />
-                <span className="flex-1 text-sm">{c.category_name}</span>
-                <span className="text-xs text-muted w-24 text-right">{c.total} всего</span>
-                <span className="text-xs text-done w-28 text-right">{c.done} выполнено</span>
-                <span className="text-xs text-pending w-28 text-right">{c.pending} невыполнено</span>
-                <span className="text-xs text-muted w-24 text-right">{c.moved_away} перенесено</span>
-              </div>
+            {data.by_category.map((row) => (
+              <CategoryRow key={row.category_id || 'none'} row={row} />
             ))}
           </div>
         </>
