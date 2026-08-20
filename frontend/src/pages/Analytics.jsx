@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import api from '../api.js';
 import CategoryFilter from '../components/CategoryFilter.jsx';
+import TaskMatrix from '../components/TaskMatrix.jsx';
 import { todayStr, toLocalDateStr, DateStepper } from '../components/DateNav.jsx';
 import { useTheme } from '../context/ThemeContext.jsx';
 
@@ -141,6 +142,11 @@ export default function Analytics() {
                 <Bar dataKey="Перенесено" stackId="a" fill={c.moved} radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
+          </div>
+
+          <h3 className="text-sm font-medium text-muted mb-2">Выполнение задач по дням</h3>
+          <div className="mb-8">
+            <TaskMatrix from={from} to={to} />
           </div>
 
           <h3 className="text-sm font-medium text-muted mb-2">По категориям</h3>
