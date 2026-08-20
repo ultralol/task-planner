@@ -90,7 +90,7 @@ export default function Notes() {
                     e.stopPropagation();
                     setSharingNote(note);
                   }}
-                  className="shrink-0 p-1.5 rounded text-muted hover:text-ink hover:bg-accent-light opacity-0 group-hover:opacity-100 transition"
+                  className="shrink-0 p-1.5 rounded text-muted hover:text-ink hover:bg-accent-light can-hover:opacity-0 can-hover:group-hover:opacity-100 transition"
                   title="Настроить доступ"
                 >
                   <Users size={15} />
@@ -102,7 +102,7 @@ export default function Notes() {
                     e.stopPropagation();
                     handleDelete(note);
                   }}
-                  className="shrink-0 p-1.5 rounded text-clay hover:bg-clay-light opacity-0 group-hover:opacity-100 transition"
+                  className="shrink-0 p-1.5 rounded text-clay hover:bg-clay-light can-hover:opacity-0 can-hover:group-hover:opacity-100 transition"
                   title="Удалить"
                 >
                   <Trash2 size={15} />

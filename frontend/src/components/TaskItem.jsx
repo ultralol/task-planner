@@ -58,7 +58,11 @@ export default function TaskItem({ task, onToggle, onEdit, onMove, onDelete, che
         )}
       </div>
 
-      <div className={`flex items-center gap-1 shrink-0 -my-1 transition ${hover ? 'opacity-100' : 'opacity-0'}`}>
+      <div
+        className={`flex items-center gap-1 shrink-0 -my-1 transition ${
+          hover ? 'opacity-100' : 'opacity-100 can-hover:opacity-0'
+        }`}
+      >
         <button onClick={() => onEdit(task)} className="p-1.5 rounded hover:bg-accent-light" title="Редактировать">
           <Pencil size={15} />
         </button>

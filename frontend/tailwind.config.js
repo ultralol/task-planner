@@ -1,3 +1,5 @@
+import plugin from 'tailwindcss/plugin';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
@@ -31,5 +33,11 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // `can-hover:` — применять стиль только там, где есть настоящее наведение (мышь).
+    // На тач-устройствах правило не срабатывает, поэтому кнопки действий видны всегда.
+    plugin(({ addVariant }) => {
+      addVariant('can-hover', '@media (hover: hover) and (pointer: fine)');
+    }),
+  ],
 };

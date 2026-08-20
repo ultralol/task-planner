@@ -103,7 +103,7 @@ function CalBlock({ it, rangeStart, onToggle, onEdit, onMove, onDelete, checkbox
         <div
           onClick={(e) => e.stopPropagation()}
           className={`absolute top-1 right-1 flex items-center gap-0.5 rounded bg-surface/85 transition ${
-            hover ? 'opacity-100' : 'opacity-0'
+            hover ? 'opacity-100' : 'opacity-100 can-hover:opacity-0'
           }`}
         >
           <button onClick={() => onEdit(t)} className="p-1 rounded hover:bg-accent-light" title="Редактировать">
