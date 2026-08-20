@@ -12,7 +12,7 @@ function normalizePerms(perms) {
 
 function PermsCheckboxes({ perms, onChange, disabled }) {
   return (
-    <div className="flex items-center gap-4 text-sm text-muted">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted">
       {[
         ['can_read', 'Чтение'],
         ['can_edit', 'Редактирование'],
@@ -111,20 +111,24 @@ export default function NoteShareModal({ note, onClose }) {
           ) : (
             <div className="space-y-3">
               {shares.map((s) => (
-                <div key={s.user_id} className="flex items-center justify-between gap-3 border-b border-line pb-3 last:border-b-0 last:pb-0">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-ink truncate">{s.name}</p>
-                    <p className="text-xs text-muted truncate">{s.email}</p>
+                <div key={s.user_id} className="border-b border-line pb-3 last:border-b-0 last:pb-0">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-ink truncate">{s.name}</p>
+                      <p className="text-xs text-muted truncate">{s.email}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => revokeShare(s.user_id)}
+                      title="Убрать доступ"
+                      className="shrink-0 -mr-1 p-1.5 rounded text-clay hover:bg-clay-light transition"
+                    >
+                      <Trash2 size={15} />
+                    </button>
                   </div>
-                  <PermsCheckboxes perms={s} onChange={(perms) => saveShare(s.user_id, perms)} />
-                  <button
-                    type="button"
-                    onClick={() => revokeShare(s.user_id)}
-                    title="Убрать доступ"
-                    className="shrink-0 p-1.5 rounded text-clay hover:bg-clay-light transition"
-                  >
-                    <Trash2 size={15} />
-                  </button>
+                  <div className="mt-2">
+                    <PermsCheckboxes perms={s} onChange={(perms) => saveShare(s.user_id, perms)} />
+                  </div>
                 </div>
               ))}
             </div>
