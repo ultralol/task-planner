@@ -7,6 +7,12 @@ import { todayStr, formatDateTiny } from './DateNav.jsx';
 // за которым следишь каждый день, приходится отмечать заново.
 const STORAGE_KEY = 'analyticsTaskNorms';
 
+// Строка матрицы определяется ключом «название#слот». Раньше сохранялось голое
+// название — приводим такие записи к первому слоту, чтобы выбор не сбросился.
+function migrateKey(key) {
+  return typeof key === 'string' && !key.includes('#') ? `${key}#1` : key;
+}
+
 const WEEKDAY_SHORT = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
 
 function dayMeta(dateStr) {
@@ -32,6 +38,18 @@ const CELL = {
   none: { className: 'bg-paper border border-line', label: 'задачи не было' },
 };
 
+// У названия, встречающегося в дне по нескольку раз, слоты различаются временем
+// (а если времени нет — порядковым номером). У обычных задач подписи нет.
+function slotLabel(task) {
+  if (task.slot_count < 2) return null;
+  return task.time_from || `#${task.slot}`;
+}
+
+function rowTitle(task) {
+  const label = slotLabel(task);
+  return label ? `${task.title} · ${label}` : task.title;
+}
+
 function Legend() {
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-4 text-xs text-muted">
@@ -53,7 +71,7 @@ export default function TaskMatrix({ from, to }) {
   const [selected, setSelected] = useState(() => {
     try {
       const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      return new Set(Array.isArray(stored) ? stored : []);
+      return new Set(Array.isArray(stored) ? stored.map(migrateKey) : []);
     } catch {
       return new Set();
     }
@@ -87,11 +105,11 @@ export default function TaskMatrix({ from, to }) {
     }
   }, [selected]);
 
-  function toggle(norm) {
+  function toggle(key) {
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(norm)) next.delete(norm);
-      else next.add(norm);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   }
@@ -103,7 +121,7 @@ export default function TaskMatrix({ from, to }) {
   }, [available, query]);
 
   // Порядок строк — как пришёл с бэкенда (сначала пункты типового расписания)
-  const rows = available.filter((t) => selected.has(t.norm));
+  const rows = available.filter((t) => selected.has(t.key));
   const dates = data?.dates || [];
   const today = todayStr();
 
@@ -129,7 +147,7 @@ export default function TaskMatrix({ from, to }) {
             </div>
             <button
               type="button"
-              onClick={() => setSelected(new Set(available.filter((t) => t.in_template).map((t) => t.norm)))}
+              onClick={() => setSelected(new Set(available.filter((t) => t.in_template).map((t) => t.key)))}
               className="rounded-lg border border-line-strong px-3 py-1.5 text-sm text-ink hover:bg-paper transition"
             >
               Все из расписания
@@ -150,12 +168,12 @@ export default function TaskMatrix({ from, to }) {
               <p className="text-sm text-muted py-1">Ничего не нашлось.</p>
             ) : (
               filtered.map((t) => {
-                const active = selected.has(t.norm);
+                const active = selected.has(t.key);
                 return (
                   <button
-                    key={t.norm}
+                    key={t.key}
                     type="button"
-                    onClick={() => toggle(t.norm)}
+                    onClick={() => toggle(t.key)}
                     title={`${t.category_name} · дней: ${Object.keys(t.days).length}`}
                     className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition ${
                       active
@@ -165,6 +183,7 @@ export default function TaskMatrix({ from, to }) {
                   >
                     <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: t.category_color }} />
                     {t.title}
+                    {slotLabel(t) && <span className="font-mono text-[10px] opacity-70">{slotLabel(t)}</span>}
                     {active && <X size={12} className="shrink-0" />}
                   </button>
                 );
@@ -205,15 +224,18 @@ export default function TaskMatrix({ from, to }) {
                       // включая дни, из которых её перенесли
                       const attempts = t.total + t.moved_away;
                       return (
-                        <tr key={t.norm}>
+                        <tr key={t.key}>
                           <th className="sticky left-0 z-10 bg-surface border-t border-r border-line text-left font-normal pr-2 py-1">
-                            <div className="w-28 sm:w-52" title={t.title}>
+                            <div className="w-28 sm:w-52" title={rowTitle(t)}>
                               <span className="flex items-center gap-1.5">
                                 <span
                                   className="w-2 h-2 rounded-full shrink-0"
                                   style={{ backgroundColor: t.category_color }}
                                 />
                                 <span className="min-w-0 text-ink truncate">{t.title}</span>
+                                {slotLabel(t) && (
+                                  <span className="shrink-0 font-mono text-[10px] text-muted">{slotLabel(t)}</span>
+                                )}
                               </span>
                               <span className="block pl-3.5 text-[10px] text-muted">
                                 {t.done} из {attempts}
