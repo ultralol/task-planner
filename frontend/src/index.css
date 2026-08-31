@@ -17,6 +17,7 @@
   --color-clay-light: 250 235 232;
   --color-done: 31 161 104;
   --color-pending: 214 87 74;
+  --color-moved: 150 136 96;
   --surface: rgb(var(--color-surface-rgb));
   --tint-strength: 15%;
   color-scheme: light;
@@ -37,6 +38,7 @@
   --color-clay-light: 51 34 28;
   --color-done: 79 185 138;
   --color-pending: 232 115 74;
+  --color-moved: 189 173 132;
   /* На тёмной поверхности слабый тинт почти не читается — усиливаем */
   --tint-strength: 28%;
   color-scheme: dark;

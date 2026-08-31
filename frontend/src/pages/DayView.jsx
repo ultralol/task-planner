@@ -188,9 +188,9 @@ export default function DayView() {
           <div className="space-y-1.5">
             {visibleMoved.map((m) => (
               <div key={m.task_id} className="flex items-center gap-2 text-sm text-muted">
-                <CornerDownRight size={14} />
+                <CornerDownRight size={14} className="text-moved" />
                 <span className="line-through">{m.title}</span>
-                <span>→ {formatDateHuman(m.now_date)}</span>
+                <span className="text-moved">→ {formatDateHuman(m.now_date)}</span>
                 {m.total_moves > 1 && (
                   <span className="text-xs text-muted/70">(перенесена {m.total_moves} раза)</span>
                 )}

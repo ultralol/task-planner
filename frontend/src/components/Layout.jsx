@@ -7,7 +7,7 @@ import { useTheme } from '../context/ThemeContext.jsx';
 const navItems = [
   { to: '/', label: 'День', end: true },
   { to: '/templates', label: 'Шаблоны' },
-  { to: '/analytics', label: 'Аналитика' },
+  { to: '/analytics', label: 'Статистика' },
   { to: '/notes', label: 'Заметки' },
   { to: '/notifications', label: 'Уведомления' },
 ];

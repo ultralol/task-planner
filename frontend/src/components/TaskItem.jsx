@@ -95,7 +95,7 @@ export default function TaskItem({ task, onSetStatus, onEdit, onMove, onDelete, 
           {task.moves?.length > 0 && (
             <History
               size={12}
-              className="inline-block ml-1.5 -mt-0.5 text-muted"
+              className="inline-block ml-1.5 -mt-0.5 text-moved"
               aria-label="Перенесена"
               title={`Перенесена: ${formatMoveChain(task.moves)}`}
             />

@@ -6,10 +6,18 @@ const { isValidDateStr, dateRange } = require('../utils/date');
 const router = express.Router();
 router.use(auth);
 
+// Максимальная длина диапазона для отчётов по дням — иначе ответ разрастается
+// до тысяч точек, а график/таблицу всё равно невозможно смотреть.
+const MAX_RANGE_DAYS = 366;
+
 router.get('/', async (req, res, next) => {
   const { from, to, category_id } = req.query;
   if (!isValidDateStr(from) || !isValidDateStr(to)) {
     return res.status(400).json({ error: 'Параметры from и to обязательны в формате YYYY-MM-DD' });
+  }
+  const dates = dateRange(from, to);
+  if (dates.length > MAX_RANGE_DAYS) {
+    return res.status(400).json({ error: `Слишком большой период: максимум ${MAX_RANGE_DAYS} дней` });
   }
   const categoryId = category_id ? Number(category_id) : null;
 
@@ -56,6 +64,10 @@ router.get('/', async (req, res, next) => {
       }
       return byDayMap.get(date);
     };
+    // Каждый день диапазона должен попасть в ответ, даже если в нём нет задач
+    // (либо их не было вообще, либо все отфильтрованы по категории) — иначе
+    // такой день пропадает из графика вместо того, чтобы показать ноль.
+    for (const d of dates) ensureDay(d);
     for (const t of tasks) {
       const entry = ensureDay(t.date instanceof Date ? t.date.toISOString().slice(0, 10) : t.date);
       entry.total += 1;
@@ -101,10 +113,6 @@ router.get('/', async (req, res, next) => {
     next(err);
   }
 });
-
-// Максимальная длина диапазона для матрицы «задача × день» — иначе ответ
-// разрастается до тысяч ячеек, а таблицу всё равно невозможно смотреть.
-const MAX_MATRIX_DAYS = 366;
 
 // Нормализация названия: одинаковыми считаются задачи с совпадающим названием
 // без учёта регистра и пробелов по краям. Ровно так же шаблон узнаёт «свои»
@@ -161,8 +169,8 @@ router.get('/by-task', async (req, res, next) => {
   }
 
   const dates = dateRange(from, to);
-  if (dates.length > MAX_MATRIX_DAYS) {
-    return res.status(400).json({ error: `Слишком большой период: максимум ${MAX_MATRIX_DAYS} дней` });
+  if (dates.length > MAX_RANGE_DAYS) {
+    return res.status(400).json({ error: `Слишком большой период: максимум ${MAX_RANGE_DAYS} дней` });
   }
 
   try {

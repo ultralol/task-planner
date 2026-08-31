@@ -98,7 +98,7 @@ export default function Analytics() {
 
   return (
     <div>
-      <h2 className="font-display text-2xl mb-1">Аналитика</h2>
+      <h2 className="font-display text-2xl mb-1">Статистика</h2>
       <p className="text-sm text-muted mb-6">Как выполняются задачи за выбранный период.</p>
 
       <div className="flex flex-wrap items-end gap-4 mb-5">

@@ -25,6 +25,7 @@ export default {
         },
         done: 'rgb(var(--color-done) / <alpha-value>)',
         pending: 'rgb(var(--color-pending) / <alpha-value>)',
+        moved: 'rgb(var(--color-moved) / <alpha-value>)',
       },
       fontFamily: {
         display: ['"Source Serif 4"', 'Georgia', 'serif'],

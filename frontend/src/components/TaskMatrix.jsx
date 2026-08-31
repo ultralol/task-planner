@@ -32,11 +32,15 @@ function cellState(cell) {
   return 'none';
 }
 
+// pending и moved — оба «нейтральные» исходы, поэтому различаются не оттенком
+// серого (на глаз почти неотличимо), а цветом: у moved свой жёлто-янтарный токен
+// (--color-moved), pending остаётся серым. Акцентный фиолетовый сюда не берём —
+// он зарезервирован под цвет будущей новой категории.
 const CELL = {
   done: { className: 'bg-done', label: 'выполнено' },
   failed: { className: 'bg-clay', label: 'провалено' },
   pending: { className: 'bg-muted/50', label: 'не отмечено' },
-  moved: { className: 'bg-line-strong', label: 'перенесено на другой день' },
+  moved: { className: 'bg-moved', label: 'перенесено на другой день' },
   none: { className: 'bg-paper border border-line', label: 'задачи не было' },
 };
 
