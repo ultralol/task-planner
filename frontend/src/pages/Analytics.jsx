@@ -6,10 +6,11 @@ import TaskMatrix from '../components/TaskMatrix.jsx';
 import { todayStr, toLocalDateStr, DateStepper } from '../components/DateNav.jsx';
 import { useTheme } from '../context/ThemeContext.jsx';
 
-// Цвета графика/сводки под тему (совпадают с токенами done/pending/muted/line)
+// Цвета графика/сводки под тему (совпадают с токенами done/clay/muted/line).
+// pending теперь значит «не отмечено» (нейтральный серый), провал — отдельный красный (clay).
 const CHART = {
-  light: { grid: '#E6E8EE', tick: '#6B7280', done: '#1FA168', pending: '#D6574A', moved: '#C6CAD3', surface: '#FFFFFF', ink: '#15181D' },
-  dark: { grid: '#263039', tick: '#8894A1', done: '#4FB98A', pending: '#E8734A', moved: '#41505C', surface: '#182029', ink: '#E6EBF0' },
+  light: { grid: '#E6E8EE', tick: '#6B7280', done: '#1FA168', failed: '#D6574A', pending: '#6B7280', moved: '#C6CAD3', surface: '#FFFFFF', ink: '#15181D' },
+  dark: { grid: '#263039', tick: '#8894A1', done: '#4FB98A', failed: '#E8734A', pending: '#8894A1', moved: '#41505C', surface: '#182029', ink: '#E6EBF0' },
 };
 
 function daysAgo(n) {
@@ -35,8 +36,9 @@ function StatCard({ label, value, color }) {
 function CategoryRow({ row }) {
   const stats = [
     { label: 'всего', value: row.total, color: 'text-muted', width: 'sm:w-24' },
-    { label: 'выполнено', value: row.done, color: 'text-done', width: 'sm:w-28' },
-    { label: 'невыполнено', value: row.pending, color: 'text-pending', width: 'sm:w-28' },
+    { label: 'выполнено', value: row.done, color: 'text-done', width: 'sm:w-24' },
+    { label: 'провалено', value: row.failed, color: 'text-clay', width: 'sm:w-24' },
+    { label: 'не отмечено', value: row.pending, color: 'text-muted', width: 'sm:w-28' },
     { label: 'перенесено', value: row.moved_away, color: 'text-muted', width: 'sm:w-24' },
   ];
 
@@ -89,7 +91,8 @@ export default function Analytics() {
     data?.by_day.map((d) => ({
       date: d.date.slice(5).split('-').reverse().join('.'),
       Выполнено: d.done,
-      Невыполнено: d.pending,
+      Провалено: d.failed,
+      'Не отмечено': d.pending,
       Перенесено: d.moved_away,
     })) || [];
 
@@ -120,7 +123,8 @@ export default function Analytics() {
           <div className="flex flex-wrap gap-3 mb-8">
             <StatCard label="Всего задач" value={data.summary.total} />
             <StatCard label="Выполнено" value={data.summary.done} color={c.done} />
-            <StatCard label="Невыполнено" value={data.summary.pending} color={c.pending} />
+            <StatCard label="Провалено" value={data.summary.failed} color={c.failed} />
+            <StatCard label="Не отмечено" value={data.summary.pending} color={c.pending} />
             <StatCard label="Перенесено" value={data.summary.moved_away} color={c.tick} />
             <StatCard label="% выполнения" value={`${data.summary.completion_rate}%`} />
           </div>
@@ -138,7 +142,8 @@ export default function Analytics() {
                 />
                 <Legend wrapperStyle={{ fontSize: 12, color: c.tick }} />
                 <Bar dataKey="Выполнено" stackId="a" fill={c.done} radius={[0, 0, 0, 0]} />
-                <Bar dataKey="Невыполнено" stackId="a" fill={c.pending} />
+                <Bar dataKey="Провалено" stackId="a" fill={c.failed} />
+                <Bar dataKey="Не отмечено" stackId="a" fill={c.pending} />
                 <Bar dataKey="Перенесено" stackId="a" fill={c.moved} radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>

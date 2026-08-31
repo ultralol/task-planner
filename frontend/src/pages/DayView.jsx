@@ -51,10 +51,9 @@ export default function DayView() {
     loadDay();
   }, [loadDay]);
 
-  async function handleToggle(task) {
-    const next = task.status === 'done' ? 'pending' : 'done';
-    setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, status: next } : t)));
-    await api.patch(`/tasks/${task.id}/status`, { status: next });
+  async function handleSetStatus(task, status) {
+    setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, status } : t)));
+    await api.patch(`/tasks/${task.id}/status`, { status });
   }
 
   async function handleCreate(payload) {
@@ -90,6 +89,7 @@ export default function DayView() {
   const visibleTasks = categoryFilter ? tasks.filter((t) => t.category_id === categoryFilter) : tasks;
   const visibleMoved = categoryFilter ? movedAway.filter((t) => t.category_id === categoryFilter) : movedAway;
   const doneCount = visibleTasks.filter((t) => t.status === 'done').length;
+  const failedCount = visibleTasks.filter((t) => t.status === 'failed').length;
   const timedTasks = visibleTasks.filter((t) => t.time_from);
   const untimedTasks = visibleTasks.filter((t) => !t.time_from);
 
@@ -99,7 +99,7 @@ export default function DayView() {
         <TaskItem
           key={task.id}
           task={task}
-          onToggle={handleToggle}
+          onSetStatus={handleSetStatus}
           onEdit={(t) => setFormTask(t)}
           onMove={(t) => setMoveTask(t)}
           onDelete={handleDelete}
@@ -113,7 +113,9 @@ export default function DayView() {
       <DateNav date={date} onChange={setDate} />
       <h2 className="font-display text-2xl capitalize mb-1">{formatDateHuman(date)}</h2>
       <p className="text-sm text-muted mb-5">
-        {visibleTasks.length > 0 ? `${doneCount} из ${visibleTasks.length} выполнено` : 'Задач пока нет'}
+        {visibleTasks.length > 0
+          ? `${doneCount} из ${visibleTasks.length} выполнено${failedCount > 0 ? `, ${failedCount} провалено` : ''}`
+          : 'Задач пока нет'}
       </p>
 
       <div className="mb-5 flex items-center justify-between gap-3">
@@ -153,7 +155,7 @@ export default function DayView() {
                 <div className="bg-surface rounded-2xl border border-line-strong p-3">
                   <TimedCalendar
                     tasks={timedTasks}
-                    onToggle={handleToggle}
+                    onSetStatus={handleSetStatus}
                     onEdit={(t) => setFormTask(t)}
                     onMove={(t) => setMoveTask(t)}
                     onDelete={handleDelete}

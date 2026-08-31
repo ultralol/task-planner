@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pencil, ArrowRightCircle, Trash2, Bell, History } from 'lucide-react';
+import { Pencil, ArrowRightCircle, Trash2, Bell, History, Check, X } from 'lucide-react';
 import { categoryTint } from '../categoryColor.js';
 import { formatDateTiny } from './DateNav.jsx';
 
@@ -14,9 +14,55 @@ function formatMoveChain(moves) {
   return dates.map(formatDateTiny).join(' → ');
 }
 
-export default function TaskItem({ task, onToggle, onEdit, onMove, onDelete, checkbox = true }) {
+// Две кнопки вместо чек-бокса: задача либо не отмечена (pending, по умолчанию),
+// либо явно отмечена выполненной, либо явно отмечена проваленной. Повторный клик
+// по уже активной кнопке снимает отметку — возвращает в pending.
+export function StatusButtons({ status, onSetStatus, compact = false }) {
+  const isDone = status === 'done';
+  const isFailed = status === 'failed';
+  const box = compact ? 'w-4 h-4' : 'w-5 h-5';
+  const icon = compact ? 10 : 12;
+
+  return (
+    <div className="flex items-center gap-1 shrink-0">
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onSetStatus(isDone ? 'pending' : 'done');
+        }}
+        title={isDone ? 'Снять отметку о выполнении' : 'Отметить выполненной'}
+        className={`${box} rounded-[5px] border-[1.5px] flex items-center justify-center transition ${
+          isDone
+            ? 'bg-done border-done text-white'
+            : 'border-line-strong text-line-strong hover:border-done hover:text-done'
+        }`}
+      >
+        <Check size={icon} strokeWidth={3} />
+      </button>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onSetStatus(isFailed ? 'pending' : 'failed');
+        }}
+        title={isFailed ? 'Снять отметку о провале' : 'Отметить проваленной'}
+        className={`${box} rounded-[5px] border-[1.5px] flex items-center justify-center transition ${
+          isFailed
+            ? 'bg-clay border-clay text-white'
+            : 'border-line-strong text-line-strong hover:border-clay hover:text-clay'
+        }`}
+      >
+        <X size={icon} strokeWidth={3} />
+      </button>
+    </div>
+  );
+}
+
+export default function TaskItem({ task, onSetStatus, onEdit, onMove, onDelete, checkbox = true }) {
   const [hover, setHover] = useState(false);
   const done = task.status === 'done';
+  const failed = task.status === 'failed';
   const time = task.time_from ? `${formatTime(task.time_from)}${task.time_to ? '–' + formatTime(task.time_to) : ''}` : null;
 
   return (
@@ -28,18 +74,20 @@ export default function TaskItem({ task, onToggle, onEdit, onMove, onDelete, che
         done ? 'opacity-55' : ''
       }`}
     >
-      {checkbox && (
-        <input type="checkbox" checked={done} onChange={() => onToggle(task)} className="checkbox" />
-      )}
+      {checkbox && <StatusButtons status={task.status} onSetStatus={(status) => onSetStatus(task, status)} />}
 
       {time && (
         <div className="w-20 shrink-0 h-5 flex items-center">
-          <span className={`font-mono text-xs ${done ? 'text-muted' : 'text-ink'}`}>{time}</span>
+          <span className={`font-mono text-xs ${done ? 'text-muted' : failed ? 'text-clay' : 'text-ink'}`}>{time}</span>
         </div>
       )}
 
       <div className="flex-1 min-w-0">
-        <p className={`text-sm leading-snug ${done ? 'line-through text-muted' : 'text-ink'}`}>
+        <p
+          className={`text-sm leading-snug ${
+            done ? 'line-through text-muted' : failed ? 'line-through text-clay' : 'text-ink'
+          }`}
+        >
           {task.title}
           {task.remind && (
             <Bell size={12} className="inline-block ml-1.5 -mt-0.5 text-muted" aria-label="Напоминание" />

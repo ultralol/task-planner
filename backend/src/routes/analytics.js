@@ -43,6 +43,7 @@ router.get('/', async (req, res, next) => {
     const summary = {
       total: tasks.length,
       done: tasks.filter((t) => t.status === 'done').length,
+      failed: tasks.filter((t) => t.status === 'failed').length,
       pending: tasks.filter((t) => t.status === 'pending').length,
       moved_away: moves.length,
     };
@@ -51,7 +52,7 @@ router.get('/', async (req, res, next) => {
     const byDayMap = new Map();
     const ensureDay = (date) => {
       if (!byDayMap.has(date)) {
-        byDayMap.set(date, { date, total: 0, done: 0, pending: 0, moved_away: 0 });
+        byDayMap.set(date, { date, total: 0, done: 0, failed: 0, pending: 0, moved_away: 0 });
       }
       return byDayMap.get(date);
     };
@@ -77,6 +78,7 @@ router.get('/', async (req, res, next) => {
           category_color: color || '#94a3b8',
           total: 0,
           done: 0,
+          failed: 0,
           pending: 0,
           moved_away: 0,
         });
@@ -224,6 +226,7 @@ router.get('/by-task', async (req, res, next) => {
           time_from: null,
           total: 0,
           done: 0,
+          failed: 0,
           pending: 0,
           moved_away: 0,
           days: {},
@@ -238,7 +241,7 @@ router.get('/by-task', async (req, res, next) => {
       return entry;
     };
     const ensureDay = (entry, date) => {
-      if (!entry.days[date]) entry.days[date] = { done: 0, pending: 0, moved_away: 0 };
+      if (!entry.days[date]) entry.days[date] = { done: 0, failed: 0, pending: 0, moved_away: 0 };
       return entry.days[date];
     };
 

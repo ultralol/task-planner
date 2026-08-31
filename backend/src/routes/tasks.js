@@ -119,10 +119,12 @@ router.put('/:id', async (req, res, next) => {
   }
 });
 
+const VALID_STATUSES = ['pending', 'done', 'failed'];
+
 router.patch('/:id/status', async (req, res, next) => {
   const { status } = req.body;
-  if (status !== 'done' && status !== 'pending') {
-    return res.status(400).json({ error: "status должен быть 'done' или 'pending'" });
+  if (!VALID_STATUSES.includes(status)) {
+    return res.status(400).json({ error: "status должен быть 'pending', 'done' или 'failed'" });
   }
   try {
     const result = await pool.query(

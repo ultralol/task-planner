@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Pencil, ArrowRightCircle, Trash2 } from 'lucide-react';
 import { categoryTint } from '../categoryColor.js';
+import { StatusButtons } from './TaskItem.jsx';
 
 const PPM = 0.8; // пикселей на минуту (1 час = 48px)
 const GUTTER = 44; // место под подписи часов
@@ -43,10 +44,11 @@ function pack(items) {
   return arr;
 }
 
-function CalBlock({ it, rangeStart, onToggle, onEdit, onMove, onDelete, checkbox }) {
+function CalBlock({ it, rangeStart, onSetStatus, onEdit, onMove, onDelete, checkbox }) {
   const [hover, setHover] = useState(false);
   const t = it.task;
   const done = t.status === 'done';
+  const failed = t.status === 'failed';
   const open = !t.time_to;
   const color = t.category_color;
   const avail = `(100% - ${GUTTER + 4}px)`;
@@ -78,23 +80,21 @@ function CalBlock({ it, rangeStart, onToggle, onEdit, onMove, onDelete, checkbox
     >
       <div className={`flex gap-1.5 px-2 py-0.5 h-full ${singleLine ? 'items-center' : 'items-start'}`}>
         {hasCheckbox && (
-          <input
-            type="checkbox"
-            checked={done}
-            onClick={(e) => e.stopPropagation()}
-            onChange={() => onToggle(t)}
-            className={`checkbox ${singleLine ? '' : 'mt-0.5'}`}
+          <StatusButtons
+            status={t.status}
+            onSetStatus={(status) => onSetStatus(t, status)}
+            compact={singleLine}
           />
         )}
         {singleLine ? (
           <div className="min-w-0 flex-1 overflow-hidden flex items-baseline gap-1.5 leading-tight">
-            <span className={`font-mono text-xs shrink-0 ${done ? 'text-muted' : 'text-ink'}`}>{time}</span>
-            <span className={`text-xs truncate ${done ? 'line-through text-muted' : 'text-ink'}`}>{t.title}</span>
+            <span className={`font-mono text-xs shrink-0 ${done ? 'text-muted' : failed ? 'text-clay' : 'text-ink'}`}>{time}</span>
+            <span className={`text-xs truncate ${done ? 'line-through text-muted' : failed ? 'line-through text-clay' : 'text-ink'}`}>{t.title}</span>
           </div>
         ) : (
           <div className="min-w-0 flex-1 overflow-hidden leading-tight">
-            <span className={`font-mono text-xs ${done ? 'text-muted' : 'text-ink'}`}>{time}</span>
-            <p className={`text-xs truncate ${done ? 'line-through text-muted' : 'text-ink'}`}>{t.title}</p>
+            <span className={`font-mono text-xs ${done ? 'text-muted' : failed ? 'text-clay' : 'text-ink'}`}>{time}</span>
+            <p className={`text-xs truncate ${done ? 'line-through text-muted' : failed ? 'line-through text-clay' : 'text-ink'}`}>{t.title}</p>
           </div>
         )}
       </div>
@@ -123,7 +123,7 @@ function CalBlock({ it, rangeStart, onToggle, onEdit, onMove, onDelete, checkbox
   );
 }
 
-export default function TimedCalendar({ tasks, onToggle, onEdit, onMove, onDelete, checkbox = true }) {
+export default function TimedCalendar({ tasks, onSetStatus, onEdit, onMove, onDelete, checkbox = true }) {
   if (!tasks.length) return null;
 
   const items = tasks.map((t) => {
@@ -159,7 +159,7 @@ export default function TimedCalendar({ tasks, onToggle, onEdit, onMove, onDelet
           key={it.task.id}
           it={it}
           rangeStart={rangeStart}
-          onToggle={onToggle}
+          onSetStatus={onSetStatus}
           onEdit={onEdit}
           onMove={onMove}
           onDelete={onDelete}

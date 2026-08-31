@@ -22,10 +22,11 @@ function dayMeta(dateStr) {
 }
 
 // Что показать в ячейке. Если в один день несколько задач с одним названием,
-// выигрывает более «сильный» исход: выполнено > не выполнено > перенесено.
+// выигрывает более «сильный» исход: выполнено > провалено > не отмечено > перенесено.
 function cellState(cell) {
   if (!cell) return 'none';
   if (cell.done > 0) return 'done';
+  if (cell.failed > 0) return 'failed';
   if (cell.pending > 0) return 'pending';
   if (cell.moved_away > 0) return 'moved';
   return 'none';
@@ -33,7 +34,8 @@ function cellState(cell) {
 
 const CELL = {
   done: { className: 'bg-done', label: 'выполнено' },
-  pending: { className: 'bg-pending', label: 'не выполнено' },
+  failed: { className: 'bg-clay', label: 'провалено' },
+  pending: { className: 'bg-muted/50', label: 'не отмечено' },
   moved: { className: 'bg-line-strong', label: 'перенесено на другой день' },
   none: { className: 'bg-paper border border-line', label: 'задачи не было' },
 };
@@ -53,7 +55,7 @@ function rowTitle(task) {
 function Legend() {
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-4 text-xs text-muted">
-      {['done', 'pending', 'moved', 'none'].map((key) => (
+      {['done', 'failed', 'pending', 'moved', 'none'].map((key) => (
         <span key={key} className="inline-flex items-center gap-1.5">
           <span className={`w-3 h-3 rounded-sm ${CELL[key].className}`} />
           {CELL[key].label}
