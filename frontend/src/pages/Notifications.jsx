@@ -21,8 +21,12 @@ export default function Notifications() {
     setMsg('');
     try {
       const res = await api.post('/telegram/link');
-      window.open(res.data.url, '_blank', 'noopener');
-      setMsg('Открылся Telegram. Нажмите «Start» в боте, затем вернитесь и обновите статус.');
+      // Переход в текущей вкладке, а не window.open: на iOS в режиме
+      // standalone-PWA (добавлено на домашний экран) window.open() — no-op,
+      // а после await он в любом случае перестаёт считаться прямым откликом
+      // на клик, и Safari его молча блокирует. location.href работает везде
+      // и корректно передаёт управление приложению Telegram через Universal Link.
+      window.location.href = res.data.url;
     } catch (e) {
       setMsg(e.response?.data?.error || 'Не удалось создать ссылку');
     } finally {
