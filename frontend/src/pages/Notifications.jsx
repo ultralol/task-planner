@@ -2,6 +2,13 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Send, Link2, Unlink, RefreshCw } from 'lucide-react';
 import api from '../api.js';
 
+// iPadOS 13+ выдаёт себя за Mac в UA, но, в отличие от настоящего Mac, умеет в тач
+function isIOS() {
+  if (typeof navigator === 'undefined') return false;
+  if (/iPad|iPhone|iPod/.test(navigator.userAgent)) return true;
+  return navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+}
+
 export default function Notifications() {
   const [status, setStatus] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -21,12 +28,16 @@ export default function Notifications() {
     setMsg('');
     try {
       const res = await api.post('/telegram/link');
-      // Переход в текущей вкладке, а не window.open: на iOS в режиме
-      // standalone-PWA (добавлено на домашний экран) window.open() — no-op,
-      // а после await он в любом случае перестаёт считаться прямым откликом
-      // на клик, и Safari его молча блокирует. location.href работает везде
-      // и корректно передаёт управление приложению Telegram через Universal Link.
-      window.location.href = res.data.url;
+      if (isIOS()) {
+        // На iOS window.open() после await уже не считается прямым откликом на
+        // клик и Safari его молча блокирует, а в standalone-PWA (с домашнего
+        // экрана) он не работает вообще никогда. location.href работает везде
+        // и корректно передаёт управление приложению Telegram через Universal Link.
+        window.location.href = res.data.url;
+      } else {
+        window.open(res.data.url, '_blank', 'noopener');
+        setMsg('Открылся Telegram. Нажмите «Start» в боте, затем вернитесь и обновите статус.');
+      }
     } catch (e) {
       setMsg(e.response?.data?.error || 'Не удалось создать ссылку');
     } finally {
